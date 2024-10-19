@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.0.10"
+    application
 }
 
 apply(plugin = "java")
@@ -16,6 +17,10 @@ dependencies {
     implementation("org.apache.pekko:pekko-actor-typed_2.13:1.1.1")
     implementation("ch.qos.logback:logback-classic:1.5.8")
     testImplementation(kotlin("test"))
+}
+
+application {
+    mainClass = "HelloWorldMain"
 }
 
 tasks.test {

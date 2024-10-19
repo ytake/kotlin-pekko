@@ -1,6 +1,7 @@
 package com.github.ytake.pekko
 
 import org.apache.pekko.actor.typed.ActorRef
+import org.apache.pekko.actor.typed.ActorSystem
 import org.apache.pekko.actor.typed.Behavior
 import org.apache.pekko.actor.typed.javadsl.AbstractBehavior
 import org.apache.pekko.actor.typed.javadsl.ActorContext
@@ -14,8 +15,12 @@ class HelloWorldMain(
     data class SayHello(val name: String)
 
     companion object {
-        fun create(): Behavior<SayHello> {
-            return Behaviors.setup(::HelloWorldMain)
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val system: ActorSystem<SayHello> =
+                ActorSystem.create(Behaviors.setup(::HelloWorldMain), "hello")
+            system.tell(SayHello("World"))
+            system.tell(SayHello("Pekko"))
         }
     }
 
