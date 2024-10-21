@@ -135,7 +135,7 @@ class ShoppingCart(
     }
 
     private fun onGet(state: State, cmd: Get): Effect<Event, State> {
-        cmd.replyTo.tell(state.toSummary())
+        cmd.replyTo.tell(state.toSummary)
         return Effect().none()
     }
 
@@ -154,7 +154,7 @@ class ShoppingCart(
 
                 else -> {
                     Effect().persist(ItemAdded(cartId, cmd.itemId, cmd.quantity))
-                        .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary())) }
+                        .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary)) }
                 }
             }
         }
@@ -162,9 +162,9 @@ class ShoppingCart(
         fun onRemoveItem(state: State, cmd: RemoveItem): Effect<Event, State> {
             return if (state.hasItem(cmd.itemId)) {
                 Effect().persist(ItemRemoved(cartId, cmd.itemId))
-                    .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary())) }
+                    .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary)) }
             } else {
-                cmd.replyTo.tell(StatusReply.success(state.toSummary()))
+                cmd.replyTo.tell(StatusReply.success(state.toSummary))
                 Effect().none()
             }
         }
@@ -178,7 +178,7 @@ class ShoppingCart(
 
                 state.hasItem(cmd.itemId) -> {
                     Effect().persist(ItemQuantityAdjusted(cartId, cmd.itemId, cmd.quantity))
-                        .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary())) }
+                        .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary)) }
                 }
 
                 else -> {
@@ -189,12 +189,12 @@ class ShoppingCart(
         }
 
         fun onCheckout(state: State, cmd: Checkout): Effect<Event, State> {
-            return if (state.isEmpty()) {
+            return if (state.isEmpty) {
                 cmd.replyTo.tell(StatusReply.error("Cannot checkout an empty shopping cart"))
                 Effect().none()
             } else {
                 Effect().persist(CheckedOut(cartId, Instant.now()))
-                    .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary())) }
+                    .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary)) }
             }
         }
     }
