@@ -23,8 +23,8 @@ class ShoppingCart(
 ) {
 
     data class State(
-        val items: MutableMap<String, Int> = mutableMapOf(),
-        var checkoutDate: Instant? = null
+        val items: Map<String, Int> = mapOf(),
+        val checkoutDate: Instant? = null
     ) : CborSerializable {
         val isCheckedOut: Boolean
             get() = checkoutDate != null
@@ -34,21 +34,22 @@ class ShoppingCart(
         fun hasItem(itemId: String): Boolean = items.containsKey(itemId)
 
         fun updateItem(itemId: String, quantity: Int): State {
-            if (quantity == 0) items.remove(itemId) else items[itemId] = quantity
-            return this
+            val mutableItems = items.toMutableMap();
+            if (quantity == 0) mutableItems.remove(itemId) else mutableItems[itemId] = quantity
+            return State(items = mutableItems.toMap(), checkoutDate)
         }
 
         fun removeItem(itemId: String): State {
-            items.remove(itemId)
-            return this
+            val mutableItems = items.toMutableMap();
+            mutableItems.remove(itemId)
+            return State(items = mutableItems.toMap(), checkoutDate)
         }
 
         fun checkout(now: Instant): State {
-            checkoutDate = now
-            return this
+            return State(items, checkoutDate = now)
         }
 
-        fun toSummary(): Summary = Summary(items.toMap(), isCheckedOut)
+        fun toSummary(): Summary = Summary(items, isCheckedOut)
     }
 
     interface Command : CborSerializable
