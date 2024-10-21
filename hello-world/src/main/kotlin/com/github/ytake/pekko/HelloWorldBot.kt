@@ -8,14 +8,13 @@ import org.apache.pekko.actor.typed.javadsl.Receive
 
 class HelloWorldBot(
     context: ActorContext<HelloWorld.Greeted>,
-    private val max: Int
+    private val max: Int,
+    private val greetingCounter: Int
 ) : AbstractBehavior<HelloWorld.Greeted>(context) {
-
-    private var greetingCounter = 0
 
     companion object {
         fun create(max: Int): Behavior<HelloWorld.Greeted> {
-            return Behaviors.setup { context -> HelloWorldBot(context, max) }
+            return Behaviors.setup { context -> HelloWorldBot(context, max, 0) }
         }
     }
 
@@ -26,13 +25,13 @@ class HelloWorldBot(
     }
 
     private fun onGreeted(message: HelloWorld.Greeted): Behavior<HelloWorld.Greeted> {
-        greetingCounter++
-        context.log.info("Greeting {} for {}", greetingCounter, message.whom)
-        return if (greetingCounter == max) {
+        val newGreetingCounter = greetingCounter + 1
+        context.log.info("Greeting {} for {}", newGreetingCounter, message.whom)
+        return if (newGreetingCounter == max) {
             Behaviors.stopped()
         } else {
             message.from.tell(HelloWorld.Greet(message.whom, context.self))
-            this
+            HelloWorldBot(context, max, newGreetingCounter)
         }
     }
 }
