@@ -26,8 +26,7 @@ class ShoppingCart(
         val items: Map<String, Int> = mapOf(),
         val checkoutDate: Instant? = null
     ) : CborSerializable {
-        val isCheckedOut: Boolean
-            get() = checkoutDate != null
+        val isCheckedOut: Boolean = checkoutDate != null
 
         fun isEmpty(): Boolean = items.isEmpty()
 
