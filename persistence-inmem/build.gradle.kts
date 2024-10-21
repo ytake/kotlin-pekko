@@ -23,7 +23,7 @@ dependencies {
     testImplementation("org.junit.vintage:junit-vintage-engine")
     testImplementation(kotlin("test"))
     testImplementation("org.apache.pekko:pekko-serialization-jackson_2.13:$pekkoVersion")
-    testImplementation("org.apache.pekko:pekko-actor-testkit-typed_3:$pekkoVersion")
+    testImplementation("org.apache.pekko:pekko-actor-testkit-typed_2.13:$pekkoVersion")
 
 }
 

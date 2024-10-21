@@ -23,32 +23,33 @@ class ShoppingCart(
 ) {
 
     data class State(
-        val items: MutableMap<String, Int> = mutableMapOf(),
-        var checkoutDate: Instant? = null
+        val items: Map<String, Int> = mapOf(),
+        val checkoutDate: Instant? = null
     ) : CborSerializable {
-        val isCheckedOut: Boolean
-            get() = checkoutDate != null
 
-        fun isEmpty(): Boolean = items.isEmpty()
+        val isCheckedOut: Boolean = checkoutDate != null
+
+        val isEmpty: Boolean = items.isEmpty()
 
         fun hasItem(itemId: String): Boolean = items.containsKey(itemId)
 
         fun updateItem(itemId: String, quantity: Int): State {
-            if (quantity == 0) items.remove(itemId) else items[itemId] = quantity
-            return this
+            val mutableItems = items.toMutableMap();
+            if (quantity == 0) mutableItems.remove(itemId) else mutableItems[itemId] = quantity
+            return State(items = mutableItems.toMap(), checkoutDate)
         }
 
         fun removeItem(itemId: String): State {
-            items.remove(itemId)
-            return this
+            val mutableItems = items.toMutableMap();
+            mutableItems.remove(itemId)
+            return State(items = mutableItems.toMap(), checkoutDate)
         }
 
         fun checkout(now: Instant): State {
-            checkoutDate = now
-            return this
+            return State(items, checkoutDate = now)
         }
 
-        fun toSummary(): Summary = Summary(items.toMap(), isCheckedOut)
+        val toSummary: Summary = Summary(items, isCheckedOut)
     }
 
     interface Command : CborSerializable
@@ -134,7 +135,7 @@ class ShoppingCart(
     }
 
     private fun onGet(state: State, cmd: Get): Effect<Event, State> {
-        cmd.replyTo.tell(state.toSummary())
+        cmd.replyTo.tell(state.toSummary)
         return Effect().none()
     }
 
@@ -153,7 +154,7 @@ class ShoppingCart(
 
                 else -> {
                     Effect().persist(ItemAdded(cartId, cmd.itemId, cmd.quantity))
-                        .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary())) }
+                        .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary)) }
                 }
             }
         }
@@ -161,9 +162,9 @@ class ShoppingCart(
         fun onRemoveItem(state: State, cmd: RemoveItem): Effect<Event, State> {
             return if (state.hasItem(cmd.itemId)) {
                 Effect().persist(ItemRemoved(cartId, cmd.itemId))
-                    .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary())) }
+                    .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary)) }
             } else {
-                cmd.replyTo.tell(StatusReply.success(state.toSummary()))
+                cmd.replyTo.tell(StatusReply.success(state.toSummary))
                 Effect().none()
             }
         }
@@ -177,7 +178,7 @@ class ShoppingCart(
 
                 state.hasItem(cmd.itemId) -> {
                     Effect().persist(ItemQuantityAdjusted(cartId, cmd.itemId, cmd.quantity))
-                        .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary())) }
+                        .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary)) }
                 }
 
                 else -> {
@@ -188,12 +189,12 @@ class ShoppingCart(
         }
 
         fun onCheckout(state: State, cmd: Checkout): Effect<Event, State> {
-            return if (state.isEmpty()) {
+            return if (state.isEmpty) {
                 cmd.replyTo.tell(StatusReply.error("Cannot checkout an empty shopping cart"))
                 Effect().none()
             } else {
                 Effect().persist(CheckedOut(cartId, Instant.now()))
-                    .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary())) }
+                    .thenRun { updatedCart: State -> cmd.replyTo.tell(StatusReply.success(updatedCart.toSummary)) }
             }
         }
     }
