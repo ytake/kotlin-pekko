@@ -26,9 +26,10 @@ class ShoppingCart(
         val items: Map<String, Int> = mapOf(),
         val checkoutDate: Instant? = null
     ) : CborSerializable {
+
         val isCheckedOut: Boolean = checkoutDate != null
 
-        fun isEmpty(): Boolean = items.isEmpty()
+        val isEmpty: Boolean = items.isEmpty()
 
         fun hasItem(itemId: String): Boolean = items.containsKey(itemId)
 
@@ -48,7 +49,7 @@ class ShoppingCart(
             return State(items, checkoutDate = now)
         }
 
-        fun toSummary(): Summary = Summary(items, isCheckedOut)
+        val toSummary: Summary = Summary(items, isCheckedOut)
     }
 
     interface Command : CborSerializable
